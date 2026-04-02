@@ -1,0 +1,114 @@
+version: "3.9"
+
+services:
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: jobqueue2
+      POSTGRES_USER: jobqueue
+      POSTGRES_PASSWORD: jobqueue
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U jobqueue -d jobqueue2"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  worker-1:
+    build: .
+    command: python main.py
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: jobqueue2
+      DB_USER: jobqueue
+      DB_PASSWORD: jobqueue
+      NUM_WORKERS: 2
+      WORKER_NODE: "node-1"
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  worker-2:
+    build: .
+    command: python main.py
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: jobqueue2
+      DB_USER: jobqueue
+      DB_PASSWORD: jobqueue
+      NUM_WORKERS: 2
+      WORKER_NODE: "node-2"
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  worker-3:
+    build: .
+    command: python main.py
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: jobqueue2
+      DB_USER: jobqueue
+      DB_PASSWORD: jobqueue
+      NUM_WORKERS: 2
+      WORKER_NODE: "node-3"
+      LOG_LEVEL: INFO
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: on-failure
+
+  metrics-exporter:
+    build: .
+    command: python prometheus_exporter.py
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: jobqueue2
+      DB_USER: jobqueue
+      DB_PASSWORD: jobqueue
+      METRICS_PORT: 8000
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alerting_rules.yml:/etc/prometheus/alerting_rules.yml
+    depends_on:
+      - metrics-exporter
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  pgdata:
+  grafana-data:

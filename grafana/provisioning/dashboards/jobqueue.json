@@ -1,0 +1,183 @@
+{
+  "title": "Distributed Job Queue",
+  "uid": "jobqueue-main",
+  "timezone": "browser",
+  "refresh": "10s",
+  "schemaVersion": 36,
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Pending Jobs",
+      "gridPos": {"x": 0, "y": 0, "w": 4, "h": 4},
+      "targets": [{"expr": "jobqueue_pending_total{queue=\"default\"}", "legendFormat": "pending"}],
+      "options": {"colorMode": "background", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": 0},
+              {"color": "yellow", "value": 100},
+              {"color": "red", "value": 500}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Running Jobs",
+      "gridPos": {"x": 4, "y": 0, "w": 4, "h": 4},
+      "targets": [{"expr": "jobqueue_running_total{queue=\"default\"}", "legendFormat": "running"}],
+      "options": {"colorMode": "background", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"color": {"mode": "fixed", "fixedColor": "blue"}}}
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Active Workers",
+      "gridPos": {"x": 8, "y": 0, "w": 4, "h": 4},
+      "targets": [{"expr": "jobqueue_active_workers{queue=\"default\"}", "legendFormat": "workers"}],
+      "options": {"colorMode": "background", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 1},
+              {"color": "green", "value": 2}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Failure Rate",
+      "gridPos": {"x": 12, "y": 0, "w": 4, "h": 4},
+      "targets": [{"expr": "jobqueue_failure_rate{queue=\"default\"} * 100", "legendFormat": "failure %"}],
+      "options": {"colorMode": "background", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": 0},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 15}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Throughput / min",
+      "gridPos": {"x": 16, "y": 0, "w": 4, "h": 4},
+      "targets": [{"expr": "jobqueue_throughput_per_minute{queue=\"default\"}", "legendFormat": "jobs/min"}],
+      "options": {"colorMode": "background", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"color": {"mode": "fixed", "fixedColor": "green"}}}
+    },
+    {
+      "id": 6,
+      "type": "stat",
+      "title": "Completed Total",
+      "gridPos": {"x": 20, "y": 0, "w": 4, "h": 4},
+      "targets": [{"expr": "jobqueue_completed_total{queue=\"default\"}", "legendFormat": "completed"}],
+      "options": {"colorMode": "background", "reduceOptions": {"calcs": ["lastNotNull"]}},
+      "fieldConfig": {"defaults": {"color": {"mode": "fixed", "fixedColor": "green"}}}
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "Queue Depth Over Time",
+      "gridPos": {"x": 0, "y": 4, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "jobqueue_pending_total{queue=\"default\"}", "legendFormat": "pending"},
+        {"expr": "jobqueue_running_total{queue=\"default\"}", "legendFormat": "running"},
+        {"expr": "jobqueue_claimed_total{queue=\"default\"}", "legendFormat": "claimed"}
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Throughput Over Time (jobs/min)",
+      "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "jobqueue_throughput_per_minute{queue=\"default\"}", "legendFormat": "jobs/min"}
+      ],
+      "fieldConfig": {"defaults": {"color": {"mode": "fixed", "fixedColor": "green"}}}
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Execution Latency",
+      "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "jobqueue_avg_exec_seconds{queue=\"default\"}", "legendFormat": "avg"},
+        {"expr": "jobqueue_p95_exec_seconds{queue=\"default\"}", "legendFormat": "p95"},
+        {"expr": "jobqueue_p99_exec_seconds{queue=\"default\"}", "legendFormat": "p99"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "s"}}
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Failure Rate Over Time",
+      "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+      "targets": [
+        {"expr": "jobqueue_failure_rate{queue=\"default\"} * 100", "legendFormat": "failure %"}
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "green", "value": 0},
+              {"color": "yellow", "value": 5},
+              {"color": "red", "value": 15}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 11,
+      "type": "timeseries",
+      "title": "Active Workers Over Time",
+      "gridPos": {"x": 0, "y": 20, "w": 12, "h": 6},
+      "targets": [
+        {"expr": "jobqueue_active_workers{queue=\"default\"}", "legendFormat": "workers"}
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {"color": "red", "value": 0},
+              {"color": "yellow", "value": 1},
+              {"color": "green", "value": 2}
+            ]
+          }
+        }
+      }
+    },
+    {
+      "id": 12,
+      "type": "timeseries",
+      "title": "Dead Letter Queue",
+      "gridPos": {"x": 12, "y": 20, "w": 12, "h": 6},
+      "targets": [
+        {"expr": "jobqueue_dead_letter_total{queue=\"default\"}", "legendFormat": "dead letter"}
+      ],
+      "fieldConfig": {"defaults": {"color": {"mode": "fixed", "fixedColor": "red"}}}
+    }
+  ]
+}

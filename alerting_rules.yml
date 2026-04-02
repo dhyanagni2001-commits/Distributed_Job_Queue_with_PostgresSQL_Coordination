@@ -1,0 +1,79 @@
+groups:
+  - name: jobqueue_alerts
+    rules:
+
+      - alert: QueueDepthHigh
+        expr: jobqueue_pending_total{queue="default"} > 500
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Job queue depth is high"
+          description: >
+            Queue 'default' has {{ $value }} pending jobs for over 2 minutes.
+            Workers may be too slow or understaffed.
+
+      - alert: QueueDepthCritical
+        expr: jobqueue_pending_total{queue="default"} > 2000
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Job queue depth is critically high"
+          description: >
+            Queue 'default' has {{ $value }} pending jobs.
+            Immediate investigation required.
+
+      - alert: JobFailureRateHigh
+        expr: jobqueue_failure_rate{queue="default"} > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Job failure rate exceeds 5%"
+          description: >
+            {{ $value | humanizePercentage }} of jobs are failing.
+            Check dead_letter queue and worker logs.
+
+      - alert: NoActiveWorkers
+        expr: jobqueue_active_workers{queue="default"} == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No active workers detected"
+          description: >
+            Zero workers have sent a heartbeat in the last 30s.
+            The queue is stalled. Restart workers immediately.
+
+      - alert: WorkerCountLow
+        expr: jobqueue_active_workers{queue="default"} < 2
+        for: 3m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Worker count below minimum"
+          description: >
+            Only {{ $value }} workers active. Expected at least 2.
+
+      - alert: DeadLetterGrowing
+        expr: increase(jobqueue_dead_letter_total{queue="default"}[10m]) > 10
+        for: 0m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Dead letter queue is growing"
+          description: >
+            {{ $value }} jobs moved to dead_letter in the last 10 minutes.
+            Check for systematic handler failures.
+
+      - alert: HighExecutionLatency
+        expr: jobqueue_p99_exec_seconds{queue="default"} > 30
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p99 job execution latency is high"
+          description: >
+            p99 execution time is {{ $value }}s.
+            Jobs may be timing out or hitting slow external services.
