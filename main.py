@@ -157,17 +157,19 @@ async def main():
     ]
 
     try:
-        await asyncio.gather(*tasks)
-    except KeyboardInterrupt:
-        logger.info("Shutting down…")
+        await asyncio.gather(*tasks, return_exceptions=True)
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        pass
     finally:
         for t in tasks:
             t.cancel()
+        await asyncio.gather(*tasks, return_exceptions=True)
         for w in workers:
             await w.stop()
         metrics.stop()
         await close_pool()
         logger.info("Clean shutdown complete.")
+
 
 
 if __name__ == "__main__":
