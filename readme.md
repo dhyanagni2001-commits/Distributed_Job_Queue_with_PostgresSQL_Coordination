@@ -164,16 +164,6 @@ job_id = await qm.enqueue(Job(
 
 Swapping backends requires implementing one abstract class (`abstract_backend.py`). Zero worker code changes.
 
-## vs Industry Systems
-
-| | This system | AWS SQS | Apache Kafka | Celery + Redis |
-|--|-------------|---------|--------------|----------------|
-| Exactly-once | YES | at-least-once | at-least-once | at-least-once |
-| Max throughput | ~10k/min | unlimited | millions/sec | ~50k/min |
-| Debug with SQL | YES | NO | NO | limited |
-| Scheduled jobs | YES | delay queues | external | YES |
-| Extra infra | none | none (managed) | Zookeeper | Redis |
-| Operational cost | low | zero | high | medium |
 
 ## Observability
 
